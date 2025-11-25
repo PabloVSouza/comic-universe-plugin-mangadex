@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/pablovsouza/comic-universe/blob/main/src/renderer/assets/icon-icon.svg?raw=true" width="200">
+  <img src="https://raw.githubusercontent.com/PabloVSouza/comic-universe-plugin-hqnow/master/icon.svg" width="200">
   <h1>Comic Universe Plugin - HQ Now</h1>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
   <a href="https://github.com/prisma/prisma/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" /></a>
@@ -60,35 +60,41 @@ comic-universe-plugin-hqnow/
 All endpoints connect to HQ Now's GraphQL API at `https://admin.hq-now.com/graphql`:
 
 ### `POST /api/getList`
+
 Returns a list of comics by searching for 'A'.
 
 **Response:** `IComic[]`
 
 ### `POST /api/search`
+
 Search for comics by name.
 
 **Request Body:** `{ search: string }`  
 **Response:** `IComic[]`
 
 ### `POST /api/getDetails`
+
 Get detailed information about a specific comic (cover, publisher).
 
 **Request Body:** `{ siteId: string }`  
 **Response:** `IComic`
 
 ### `POST /api/getChapters`
+
 Get all chapters for a comic.
 
 **Request Body:** `{ siteId: string }`  
 **Response:** `IChapter[]`
 
 ### `POST /api/getPages`
+
 Get all pages for a chapter (extracts from chapter data).
 
 **Request Body:** `{ chapter: IChapter }`  
 **Response:** `IPage[]`
 
 ### `POST /api/downloadChapter`
+
 Download a chapter (currently a stub).
 
 **Request Body:** `{ comic: IComic, chapter: IChapter }`  
@@ -97,17 +103,20 @@ Download a chapter (currently a stub).
 ## Getting Started
 
 1. **Clone this repository:**
+
    ```bash
    git clone https://github.com/pablovsouza/comic-universe-plugin-hqnow.git
    cd comic-universe-plugin-hqnow
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Start the development server:**
+
    ```bash
    npm run dev
    ```
@@ -123,6 +132,7 @@ comic-universe://plugin/install?url=<YOUR_API_URL>&name=HQ Now&tag=hqnow
 ```
 
 When users click the install button:
+
 1. Comic Universe app opens (if installed)
 2. A confirmation dialog appears
 3. Upon confirmation, the plugin is added to the user's database

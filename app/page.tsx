@@ -40,8 +40,8 @@ export default function Home() {
         <div className="text-center mb-6 max-w-4xl">
           <div className="flex justify-center mb-2">
             <Image
-              src="/logo.svg"
-              alt="Comic Universe Logo"
+              src="/icon.svg"
+              alt="HQ Now Logo"
               className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80"
               width={320}
               height={320}
@@ -57,7 +57,8 @@ export default function Home() {
             HQ Now
           </h1>
           <p className="text-white text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-6">
-            Access thousands of comics from HQ Now. Browse, search, and read your favorite comics directly in Comic Universe.
+            Access thousands of comics from HQ Now. Browse, search, and read your favorite comics
+            directly in Comic Universe.
           </p>
         </div>
 
@@ -105,7 +106,8 @@ export default function Home() {
           </div>
 
           <p className="text-white/60 text-sm text-center mb-8">
-            This plugin uses GraphQL to fetch data from HQ Now's API, providing seamless access to their comic collection.
+            This plugin uses GraphQL to fetch data from HQ Now's API, providing seamless access to
+            their comic collection.
           </p>
 
           <div className="flex flex-col items-center gap-4">
