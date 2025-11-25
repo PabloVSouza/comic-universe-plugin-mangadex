@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="https://github.com/pablovsouza/comic-universe/blob/main/src/renderer/assets/icon.svg?raw=true" width="200">
-  <h1>Comic Universe Plugin -  HQ Now</h1>
+  <img src="https://github.com/pablovsouza/comic-universe/blob/main/src/renderer/assets/icon-icon.svg?raw=true" width="200">
+  <h1>Comic Universe Plugin - HQ Now</h1>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
   <a href="https://github.com/prisma/prisma/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" /></a>
   <a href="https://discord.gg/gPsQkDGDfc"><img alt="Discord" src="https://img.shields.io/discord/1270554232260526120?label=Discord"></a>
@@ -20,27 +20,154 @@
 
 ## What is this for?
 
-This is a plugin for [**Comic Universe**](https://github.com/pablovsouza/comic-universe), developed by forking the [**template**](https://github.com/pablovsouza/comic-universe-plugin-template), with the goal of fetching data from [HQ Now](https://www.hq-now.com/).
+This is a plugin for [**Comic Universe**](https://github.com/pablovsouza/comic-universe) that provides access to comics from [HQ Now](https://www.hq-now.com/).
 
-Feel free to fork this repository and start developing your own plugin, just following the typescript interfaces provided, as well as **being compatible with NPM**.
+This plugin uses **Next.js** to create a web application that exposes API endpoints that Comic Universe can consume. It connects to HQ Now's GraphQL API to fetch comic data.
 
-Please avoid using unnecessary dependencies, as it would make the main app heavier.
+## ✨ Latest Updates (v2.0.0)
 
-### How can i test the plugin?
+- **API-based architecture** - Migrated from NPM package to remote HTTP API
+- **Next.js implementation** - Built with Next.js 16 for easy deployment
+- **GraphQL integration** - Connects to HQ Now's GraphQL API
+- **Deep link installation** - Users can install the plugin directly from a web page
+- **Beautiful UI** - Styled home page matching Comic Universe's design
 
-Comic Universe (Only on version 2.0 onwards) will look for the folder called **plugins**, inside the **comic-universe** folder, on the following path:
+## Project Structure
 
-- On Macs, its "**~/library/application-support/comic-universe/plugins**"
-- On Windows, its "**%appdata%/comic-universe/plugins**"
+```
+comic-universe-plugin-hqnow/
+├── app/
+│   ├── api/                    # API endpoints for Comic Universe
+│   │   ├── getList/            # Get list of comics (searches for 'A')
+│   │   ├── search/             # Search for comics by name
+│   │   ├── getDetails/         # Get comic details (cover, publisher)
+│   │   ├── getChapters/        # Get chapters for a comic
+│   │   ├── getPages/           # Get pages for a chapter
+│   │   └── downloadChapter/   # Download a chapter (stub)
+│   ├── components/             # React components
+│   │   └── StarrySky.tsx       # Animated background component
+│   ├── page.tsx                # Home page with install button
+│   ├── layout.tsx              # Root layout
+│   └── globals.css             # Global styles
+├── public/                     # Static assets
+│   └── icon.svg                # Plugin icon
+├── package.json                # Dependencies and scripts
+└── README.md                   # This file
+```
 
-Just put your plugin folder there and the app should recognize the files.
+## API Endpoints
 
-**Make sure to fill the package.json properly, so the app can use it's metadata.**
+All endpoints connect to HQ Now's GraphQL API at `https://admin.hq-now.com/graphql`:
 
-### What if i'm stuck?
+### `POST /api/getList`
+Returns a list of comics by searching for 'A'.
 
-Feel free to reach me on the social networks provided above, as well as in our discord server.
+**Response:** `IComic[]`
 
-### I'm done developing my plugin, how do i publish it?
+### `POST /api/search`
+Search for comics by name.
 
-Reach me in the discord server, on the channel **#plugin-submission**.
+**Request Body:** `{ search: string }`  
+**Response:** `IComic[]`
+
+### `POST /api/getDetails`
+Get detailed information about a specific comic (cover, publisher).
+
+**Request Body:** `{ siteId: string }`  
+**Response:** `IComic`
+
+### `POST /api/getChapters`
+Get all chapters for a comic.
+
+**Request Body:** `{ siteId: string }`  
+**Response:** `IChapter[]`
+
+### `POST /api/getPages`
+Get all pages for a chapter (extracts from chapter data).
+
+**Request Body:** `{ chapter: IChapter }`  
+**Response:** `IPage[]`
+
+### `POST /api/downloadChapter`
+Download a chapter (currently a stub).
+
+**Request Body:** `{ comic: IComic, chapter: IChapter }`  
+**Response:** `{ success: boolean }`
+
+## Getting Started
+
+1. **Clone this repository:**
+   ```bash
+   git clone https://github.com/pablovsouza/comic-universe-plugin-hqnow.git
+   cd comic-universe-plugin-hqnow
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Deploy your plugin** to a hosting service (Vercel, Netlify, etc.)
+
+## Plugin Installation
+
+Users can install this plugin using a deep link. The home page includes an install button that generates a deep link in the format:
+
+```
+comic-universe://plugin/install?url=<YOUR_API_URL>&name=HQ Now&tag=hqnow
+```
+
+When users click the install button:
+1. Comic Universe app opens (if installed)
+2. A confirmation dialog appears
+3. Upon confirmation, the plugin is added to the user's database
+4. The plugin becomes immediately available
+
+## Development
+
+### Running Locally
+
+```bash
+npm run dev
+```
+
+The plugin will be available at `http://localhost:3000`
+
+### Building for Production
+
+```bash
+npm run build
+npm start
+```
+
+## Deployment
+
+You can deploy this plugin to any hosting service that supports Next.js:
+
+- **Vercel** (recommended) - Zero-config deployment
+- **Netlify** - Easy deployment with continuous integration
+- **Railway** - Simple deployment with database support
+- **Any Node.js hosting** - Works with any platform that supports Next.js
+
+Make sure to set your API URL in the install button's deep link.
+
+## Testing Your Plugin
+
+1. **Deploy your plugin** to a public URL
+2. **Open the home page** in a browser
+3. **Click the install button** - This will trigger the deep link
+4. **Check Comic Universe** - The plugin should appear in the plugins list
+5. **Test the endpoints** - Use the app to browse comics and verify all endpoints work
+
+## What if I'm stuck?
+
+Feel free to reach me on the social networks provided above, as well as in our Discord server.
+
+## License
+
+MIT
