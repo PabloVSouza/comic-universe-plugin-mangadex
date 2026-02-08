@@ -34,9 +34,9 @@ export default function Home() {
   }
 
   return (
-    <div className="size-full relative min-h-screen">
+    <div className="relative w-full min-h-screen">
       <StarrySky className="fixed inset-0 w-full h-full -z-0" />
-      <section className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-8">
+      <section className="relative z-10 flex flex-col items-center min-h-screen px-6 py-12">
         <div className="text-center mb-6 max-w-4xl">
           <div className="flex justify-center mb-2">
             <Image
@@ -117,6 +117,12 @@ export default function Home() {
             >
               Install Plugin
             </button>
+            <a
+              href="/swagger"
+              className="font-light bg-purple-600/80 hover:bg-purple-500 text-white shadow-lg px-8 py-4 rounded-lg text-lg transition-colors w-full md:w-auto text-center"
+            >
+              Open Swagger
+            </a>
             {installStatus && (
               <p className="text-white/80 text-sm text-center max-w-md">{installStatus}</p>
             )}

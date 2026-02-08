@@ -16,18 +16,15 @@
 
   html,
   body {
-    overscroll-behavior: none;
+    overscroll-behavior: auto;
     width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
+    overflow-y: auto;
     background: linear-gradient(135deg, #674b9c 0%, #101028 70%, #12182b 90%, #19202c 100%);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-  }
-
-  html {
-    height: -webkit-fill-available;
   }
 }
