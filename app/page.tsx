@@ -74,7 +74,7 @@ export default function Home() {
               API Endpoints
             </h2>
             <p className="text-white/80 text-lg mb-6">
-              This plugin connects to HQ Now's GraphQL API to provide access to their comic library:
+              This plugin connects to HQ Now&apos;s GraphQL API to provide access to their comic library:
             </p>
           </div>
 
@@ -106,7 +106,7 @@ export default function Home() {
           </div>
 
           <p className="text-white/60 text-sm text-center mb-8">
-            This plugin uses GraphQL to fetch data from HQ Now's API, providing seamless access to
+            This plugin uses GraphQL to fetch data from HQ Now&apos;s API, providing seamless access to
             their comic collection.
           </p>
 
