@@ -11,12 +11,15 @@ export default function Home() {
     try {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
       const pluginUrl = `${baseUrl}/api`
+      const metadataUrl = `${pluginUrl}/metadata`
       const pluginName = 'HQ Now'
       const pluginTag = 'hqnow'
 
       const deepLink = `comic-universe://plugin/install?url=${encodeURIComponent(
         pluginUrl
-      )}&name=${encodeURIComponent(pluginName)}&tag=${encodeURIComponent(pluginTag)}`
+      )}&metadataUrl=${encodeURIComponent(metadataUrl)}&name=${encodeURIComponent(
+        pluginName
+      )}&tag=${encodeURIComponent(pluginTag)}`
 
       setInstallStatus('Opening Comic Universe...')
 
