@@ -8,6 +8,11 @@ const GET_HQS_BY_NAME_QUERY = `
       name
       synopsis
       status
+      hqCover
+      publisherName
+      capitulos {
+        id
+      }
     }
   }
 `
@@ -33,7 +38,21 @@ export async function POST(request: NextRequest) {
     })
 
     const { data } = await response.json()
-    return NextResponse.json(data?.getHqsByName || [])
+
+    const results = (data?.getHqsByName || []).map((item: Record<string, unknown>) => {
+      const chapters = Array.isArray(item.capitulos) ? item.capitulos : []
+      return {
+        siteId: item.siteId,
+        name: item.name,
+        synopsis: item.synopsis,
+        status: item.status,
+        publisher: item.publisherName ?? '',
+        cover: item.hqCover ?? '',
+        chapterCount: chapters.length
+      }
+    })
+
+    return NextResponse.json(results)
   } catch (error) {
     console.error('Error in search:', error)
     return NextResponse.json([])
