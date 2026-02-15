@@ -37,20 +37,12 @@ export async function POST(request: NextRequest) {
 
     const { data } = await response.json()
 
-    const chapters = (data?.getChaptersByHqId || []).reduce(
-      (acc: unknown[], chapter: Record<string, unknown>) => {
-        return [
-          ...acc,
-          {
-            ...chapter,
-            siteId: String(siteId),
-            offline: false,
-            pages: JSON.stringify(chapter.pages)
-          }
-        ]
-      },
-      []
-    )
+    const chapters = (data?.getChaptersByHqId || []).map((chapter: Record<string, unknown>) => ({
+      ...chapter,
+      siteId: String(siteId),
+      offline: false,
+      pages: Array.isArray(chapter.pages) ? chapter.pages : []
+    }))
 
     return NextResponse.json(chapters)
   } catch (error) {
