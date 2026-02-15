@@ -15,7 +15,7 @@ export default function Home() {
       const pluginName = 'HQ Now'
       const pluginTag = 'hqnow'
 
-      const deepLink = `comic-universe://plugin/install?url=${encodeURIComponent(
+      const deepLink = `comic-universe-tauri://plugin/install?url=${encodeURIComponent(
         pluginUrl
       )}&metadataUrl=${encodeURIComponent(metadataUrl)}&name=${encodeURIComponent(
         pluginName
