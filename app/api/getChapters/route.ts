@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const chapters = (data?.getChaptersByHqId || []).map((chapter: Record<string, unknown>) => ({
       ...chapter,
-      siteId: String(siteId),
+      comicSiteId: String(siteId),
       offline: false,
       pages: Array.isArray(chapter.pages) ? chapter.pages : []
     }))

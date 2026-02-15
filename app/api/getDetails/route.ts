@@ -4,6 +4,9 @@ import { GRAPHQL_URL } from '../../lib/constants'
 const GET_HQS_BY_ID_QUERY = `
   query getHqsById($id: Int!) {
     getHqsById(id: $id) {
+      name
+      synopsis
+      status
       cover: hqCover
       publisher: publisherName
     }
