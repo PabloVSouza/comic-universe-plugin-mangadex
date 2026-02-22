@@ -12,8 +12,8 @@ export default function Home() {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
       const pluginUrl = `${baseUrl}/api`
       const metadataUrl = `${pluginUrl}/metadata`
-      const pluginName = 'HQ Now'
-      const pluginTag = 'hqnow'
+      const pluginName = 'MangaDex'
+      const pluginTag = 'mangadex'
 
       const deepLink = `comic-universe-tauri://plugin/install?url=${encodeURIComponent(
         pluginUrl
@@ -22,7 +22,6 @@ export default function Home() {
       )}&tag=${encodeURIComponent(pluginTag)}`
 
       setInstallStatus('Opening Comic Universe...')
-
       window.location.href = deepLink
 
       setTimeout(() => {
@@ -44,7 +43,7 @@ export default function Home() {
           <div className="flex justify-center mb-2">
             <Image
               src="/icon.svg"
-              alt="HQ Now Logo"
+              alt="MangaDex Logo"
               className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80"
               width={320}
               height={320}
@@ -57,11 +56,10 @@ export default function Home() {
                 '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000, 0px 2px 0px #000, 0px -2px 0px #000, 2px 0px 0px #000, -2px 0px 0px #000'
             }}
           >
-            HQ Now
+            MangaDex
           </h1>
           <p className="text-white text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-6">
-            Access thousands of comics from HQ Now. Browse, search, and read your favorite comics
-            directly in Comic Universe.
+            Search and import manga from MangaDex directly in Comic Universe.
           </p>
         </div>
 
@@ -77,41 +75,17 @@ export default function Home() {
               API Endpoints
             </h2>
             <p className="text-white/80 text-lg mb-6">
-              This plugin connects to HQ Now&apos;s GraphQL API to provide access to their comic library:
+              This plugin uses MangaDex public API:
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <div className="bg-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-              <h3 className="text-white text-lg font-semibold mb-2">getList</h3>
-              <p className="text-white/80 text-sm">Retrieve a list of comics</p>
-            </div>
-            <div className="bg-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-              <h3 className="text-white text-lg font-semibold mb-2">search</h3>
-              <p className="text-white/80 text-sm">Search for comics</p>
-            </div>
-            <div className="bg-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-              <h3 className="text-white text-lg font-semibold mb-2">getDetails</h3>
-              <p className="text-white/80 text-sm">Get detailed information about a comic</p>
-            </div>
-            <div className="bg-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-              <h3 className="text-white text-lg font-semibold mb-2">getChapters</h3>
-              <p className="text-white/80 text-sm">Get chapters for a comic</p>
-            </div>
-            <div className="bg-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-              <h3 className="text-white text-lg font-semibold mb-2">getPages</h3>
-              <p className="text-white/80 text-sm">Get pages for a chapter</p>
-            </div>
-            <div className="bg-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-              <h3 className="text-white text-lg font-semibold mb-2">downloadChapter</h3>
-              <p className="text-white/80 text-sm">Download a chapter</p>
-            </div>
+            {['getList', 'search', 'getDetails', 'getChapters', 'getPages', 'downloadChapter'].map((endpoint) => (
+              <div key={endpoint} className="bg-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+                <h3 className="text-white text-lg font-semibold mb-2">{endpoint}</h3>
+              </div>
+            ))}
           </div>
-
-          <p className="text-white/60 text-sm text-center mb-8">
-            This plugin uses GraphQL to fetch data from HQ Now&apos;s API, providing seamless access to
-            their comic collection.
-          </p>
 
           <div className="flex flex-col items-center gap-4">
             <button

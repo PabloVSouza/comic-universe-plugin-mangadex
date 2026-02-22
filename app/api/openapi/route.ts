@@ -3,232 +3,61 @@ import { NextResponse } from 'next/server'
 const openApiDocument = {
   openapi: '3.0.3',
   info: {
-    title: 'Comic Universe Plugin - HQ Now API',
+    title: 'Comic Universe Plugin - MangaDex API',
     version: '2.0.0',
-    description: 'HTTP API exposed by the HQ Now plugin for Comic Universe.'
+    description: 'HTTP API exposed by the MangaDex plugin for Comic Universe.'
   },
   servers: [{ url: '/' }],
   paths: {
-    '/api/getList': {
-      post: {
-        tags: ['Comics'],
-        summary: 'Get default comics list',
-        responses: {
-          '200': {
-            description: 'List of comics',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Comic' }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
+    '/api/getList': { post: { summary: 'Get default manga list', responses: { '200': { description: 'OK' } } } },
     '/api/search': {
       post: {
-        tags: ['Comics'],
-        summary: 'Search comics by name',
+        summary: 'Search manga by name',
         requestBody: {
           required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['search'],
-                properties: {
-                  search: { type: 'string', example: 'batman' }
-                }
-              }
-            }
-          }
+          content: { 'application/json': { schema: { type: 'object', properties: { search: { type: 'string' } } } } }
         },
-        responses: {
-          '200': {
-            description: 'List of comics',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Comic' }
-                }
-              }
-            }
-          }
-        }
+        responses: { '200': { description: 'OK' } }
       }
     },
     '/api/getDetails': {
       post: {
-        tags: ['Comics'],
-        summary: 'Get comic details by site id',
+        summary: 'Get manga details',
         requestBody: {
           required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['siteId'],
-                properties: {
-                  siteId: { type: 'string', example: '123' }
-                }
-              }
-            }
-          }
+          content: { 'application/json': { schema: { type: 'object', properties: { siteId: { type: 'string' } } } } }
         },
-        responses: {
-          '200': {
-            description: 'Comic details',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/ComicDetails' }
-              }
-            }
-          }
-        }
+        responses: { '200': { description: 'OK' } }
       }
     },
     '/api/getChapters': {
       post: {
-        tags: ['Chapters'],
-        summary: 'Get comic chapters',
+        summary: 'Get manga chapters',
         requestBody: {
           required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['siteId'],
-                properties: {
-                  siteId: { type: 'string', example: '123' }
-                }
-              }
-            }
-          }
+          content: { 'application/json': { schema: { type: 'object', properties: { siteId: { type: 'string' } } } } }
         },
-        responses: {
-          '200': {
-            description: 'List of chapters',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Chapter' }
-                }
-              }
-            }
-          }
-        }
+        responses: { '200': { description: 'OK' } }
       }
     },
     '/api/getPages': {
       post: {
-        tags: ['Chapters'],
-        summary: 'Get pages for a chapter',
+        summary: 'Get chapter pages',
         requestBody: {
           required: true,
           content: {
             'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  chapter: {
-                    type: 'object',
-                    properties: {
-                      pages: {
-                        description: 'JSON string or array of pages',
-                        oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'object' } }]
-                      }
-                    }
-                  },
-                  siteLink: { type: 'string' }
-                }
-              }
+              schema: { type: 'object', properties: { chapterSiteId: { type: 'string' }, siteId: { type: 'string' } } }
             }
           }
         },
-        responses: {
-          '200': {
-            description: 'List of pages',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Page' }
-                }
-              }
-            }
-          }
-        }
+        responses: { '200': { description: 'OK' } }
       }
     },
     '/api/downloadChapter': {
       post: {
-        tags: ['Chapters'],
-        summary: 'Download chapter (stub)',
-        requestBody: {
-          required: false,
-          content: {
-            'application/json': {
-              schema: { type: 'object', additionalProperties: true }
-            }
-          }
-        },
-        responses: {
-          '200': {
-            description: 'Operation result',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: { success: { type: 'boolean' } }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  components: {
-    schemas: {
-      Comic: {
-        type: 'object',
-        properties: {
-          siteId: { type: 'string' },
-          name: { type: 'string' },
-          synopsis: { type: 'string' },
-          status: { type: 'string' }
-        }
-      },
-      ComicDetails: {
-        type: 'object',
-        properties: {
-          siteId: { type: 'string' },
-          type: { type: 'string', example: 'hq' },
-          cover: { type: 'string' },
-          publisher: { type: 'string' }
-        }
-      },
-      Chapter: {
-        type: 'object',
-        properties: {
-          siteId: { type: 'string' },
-          name: { type: 'string' },
-          number: { type: 'number' },
-          offline: { type: 'boolean' },
-          pages: { type: 'string' }
-        }
-      },
-      Page: {
-        type: 'object',
-        properties: {
-          filename: { type: 'string' },
-          path: { type: 'string' }
-        }
+        summary: 'Download chapter stub',
+        responses: { '200': { description: 'OK' } }
       }
     }
   }

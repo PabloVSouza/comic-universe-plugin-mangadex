@@ -1,11 +1,11 @@
 {
-  "name": "comic-universe-plugin-hqnow",
+  "name": "comic-universe-plugin-mangadex",
   "version": "2.0.0",
   "private": true,
-  "description": "Plugin for supporting HQ Now as a repository",
+  "description": "Plugin for supporting MangaDex as a repository",
   "author": "Pablo Souza",
   "license": "MIT",
-  "repository": "https://github.com/pablovsouza/comic-universe-plugin-hqnow",
+  "repository": "https://github.com/PabloVSouza/comic-universe-plugin-mangadex",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

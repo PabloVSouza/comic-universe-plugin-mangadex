@@ -40,7 +40,7 @@ export default function SwaggerPage() {
     <div className="relative z-10 min-h-screen px-6 py-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="font-bangers text-yellow-400 text-4xl mb-4">Swagger</h1>
-        <p className="text-white/80 mb-6">HQ Now plugin API documentation.</p>
+        <p className="text-white/80 mb-6">MangaDex plugin API documentation.</p>
         <div className="bg-white rounded-xl p-4">
           <div id="swagger-ui" />
         </div>

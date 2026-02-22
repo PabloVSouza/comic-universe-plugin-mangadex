@@ -16,16 +16,16 @@ export async function OPTIONS() {
 export async function GET() {
   return NextResponse.json(
     {
-      name: 'HQ Now',
-      tag: 'hqnow',
+      name: 'MangaDex',
+      tag: 'mangadex',
       version: '2.0.0',
-      contentTypes: ['comic'],
-      languageCodes: ['pt-BR'],
+      contentTypes: ['manga', 'comic'],
+      languageCodes: ['en'],
       sources: [
         {
-          id: 'hqnow',
-          name: 'HQ Now',
-          languageCodes: ['pt-BR'],
+          id: 'mangadex',
+          name: 'MangaDex',
+          languageCodes: ['en'],
           isDefault: true
         }
       ]
