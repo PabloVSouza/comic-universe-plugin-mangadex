@@ -20,12 +20,12 @@ export async function GET() {
       tag: 'mangadex',
       version: '2.0.0',
       contentTypes: ['manga', 'comic'],
-      languageCodes: ['en'],
+      languageCodes: ['en', 'pt-br', 'es-la', 'es', 'fr', 'de', 'it', 'ru', 'ja'],
       sources: [
         {
           id: 'mangadex',
           name: 'MangaDex',
-          languageCodes: ['en'],
+          languageCodes: ['en', 'pt-br', 'es-la', 'es', 'fr', 'de', 'it', 'ru', 'ja'],
           isDefault: true
         }
       ]
