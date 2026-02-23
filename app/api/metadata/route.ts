@@ -20,6 +20,7 @@ export async function GET() {
       tag: 'mangadex',
       version: '2.0.0',
       contentTypes: ['manga', 'comic'],
+      capabilities: ['metadata', 'content'],
       languageCodes: ['en', 'pt-br', 'es-la', 'es', 'fr', 'de', 'it', 'ru', 'ja'],
       sources: [
         {
