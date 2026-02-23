@@ -5,12 +5,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const siteId = typeof body?.siteId === 'string' ? body.siteId.trim() : ''
+    const languageCodes = Array.isArray(body?.languageCodes) ? body.languageCodes : undefined
 
     if (!siteId) {
       return NextResponse.json({}, { status: 400 })
     }
 
-    const details = await getMangaDexMangaDetails(siteId)
+    const details = await getMangaDexMangaDetails(siteId, languageCodes)
     if (!details) {
       return NextResponse.json({}, { status: 404 })
     }

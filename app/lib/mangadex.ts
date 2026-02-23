@@ -72,6 +72,12 @@ const normalizeLanguageCodes = (value: unknown): string[] => {
     .filter(Boolean)
 }
 
+const resolveRequestedLanguages = (value: unknown): string[] => {
+  const requested = normalizeLanguageCodes(value)
+  if (requested.length > 0) return requested
+  return DEFAULT_LANGUAGES
+}
+
 const extractCoverFileName = (relationships: MangaDexRelationship[] | undefined): string => {
   if (!Array.isArray(relationships)) return ''
   const cover = relationships.find((relationship) => relationship.type === 'cover_art')
@@ -111,13 +117,17 @@ export interface PluginPage {
   path: string
 }
 
-export async function searchMangaDexManga(query: string, limit = 25): Promise<PluginMangaSummary[]> {
+export async function searchMangaDexManga(
+  query: string,
+  limit = 25,
+  languageCodes?: string[]
+): Promise<PluginMangaSummary[]> {
   const params = new URLSearchParams()
   params.set('title', query)
   params.set('limit', String(Math.max(1, Math.min(limit, 100))))
   params.append('includes[]', 'cover_art')
   params.append('order[relevance]', 'desc')
-  for (const language of DEFAULT_LANGUAGES) {
+  for (const language of resolveRequestedLanguages(languageCodes)) {
     params.append('availableTranslatedLanguage[]', language)
   }
 
@@ -153,7 +163,10 @@ export async function searchMangaDexManga(query: string, limit = 25): Promise<Pl
   })
 }
 
-export async function getMangaDexMangaDetails(siteId: string): Promise<PluginMangaSummary | null> {
+export async function getMangaDexMangaDetails(
+  siteId: string,
+  languageCodes?: string[]
+): Promise<PluginMangaSummary | null> {
   const params = new URLSearchParams()
   params.append('includes[]', 'cover_art')
 
@@ -176,7 +189,7 @@ export async function getMangaDexMangaDetails(siteId: string): Promise<PluginMan
   const status = normalizeStatus(manga.attributes?.status)
   const coverFileName = extractCoverFileName(manga.relationships)
   const cover = buildCoverUrl(manga.id, coverFileName)
-  const chapterCount = await getMangaDexChapterCount(siteId)
+  const chapterCount = await getMangaDexChapterCount(siteId, languageCodes)
 
   return {
     siteId: manga.id,
@@ -190,9 +203,9 @@ export async function getMangaDexMangaDetails(siteId: string): Promise<PluginMan
   }
 }
 
-async function getMangaDexChapterCount(siteId: string): Promise<number> {
+async function getMangaDexChapterCount(siteId: string, languageCodes?: string[]): Promise<number> {
   const params = new URLSearchParams()
-  for (const language of DEFAULT_LANGUAGES) {
+  for (const language of resolveRequestedLanguages(languageCodes)) {
     params.append('translatedLanguage[]', language)
   }
 
@@ -216,7 +229,10 @@ async function getMangaDexChapterCount(siteId: string): Promise<number> {
   return total
 }
 
-export async function getMangaDexChapters(siteId: string): Promise<PluginChapterSummary[]> {
+export async function getMangaDexChapters(
+  siteId: string,
+  languageCodes?: string[]
+): Promise<PluginChapterSummary[]> {
   const limit = 100
   let offset = 0
   let total = 0
@@ -228,7 +244,7 @@ export async function getMangaDexChapters(siteId: string): Promise<PluginChapter
     params.set('offset', String(offset))
     params.append('order[chapter]', 'asc')
     params.append('order[volume]', 'asc')
-    for (const language of DEFAULT_LANGUAGES) {
+    for (const language of resolveRequestedLanguages(languageCodes)) {
       params.append('translatedLanguage[]', language)
     }
 
