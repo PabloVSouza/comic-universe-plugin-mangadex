@@ -37,6 +37,15 @@ interface MangaDexListResponse<T> {
   total?: number
 }
 
+interface MangaDexAggregateResponse {
+  volumes?: Record<
+    string,
+    {
+      chapters?: Record<string, unknown>
+    }
+  >
+}
+
 const pickLocalized = (value: LocalizedMap | undefined): string => {
   if (!value || typeof value !== 'object') return ''
   const preferred = value.en
@@ -167,6 +176,7 @@ export async function getMangaDexMangaDetails(siteId: string): Promise<PluginMan
   const status = normalizeStatus(manga.attributes?.status)
   const coverFileName = extractCoverFileName(manga.relationships)
   const cover = buildCoverUrl(manga.id, coverFileName)
+  const chapterCount = await getMangaDexChapterCount(siteId)
 
   return {
     siteId: manga.id,
@@ -174,10 +184,36 @@ export async function getMangaDexMangaDetails(siteId: string): Promise<PluginMan
     synopsis,
     status,
     cover,
-    chapterCount: null,
+    chapterCount,
     languageCodes: normalizeLanguageCodes(manga.attributes?.availableTranslatedLanguages),
     contentType: 'manga'
   }
+}
+
+async function getMangaDexChapterCount(siteId: string): Promise<number> {
+  const params = new URLSearchParams()
+  for (const language of DEFAULT_LANGUAGES) {
+    params.append('translatedLanguage[]', language)
+  }
+
+  const response = await fetch(`${MANGADEX_API_URL}/manga/${siteId}/aggregate?${params.toString()}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' }
+  })
+
+  if (!response.ok) {
+    return 0
+  }
+
+  const payload = (await response.json()) as MangaDexAggregateResponse
+  const volumes = payload.volumes ?? {}
+
+  let total = 0
+  for (const volume of Object.values(volumes)) {
+    total += Object.keys(volume?.chapters ?? {}).length
+  }
+
+  return total
 }
 
 export async function getMangaDexChapters(siteId: string): Promise<PluginChapterSummary[]> {
