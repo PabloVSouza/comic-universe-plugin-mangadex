@@ -22,13 +22,19 @@ interface MangaDexMangaData {
 }
 
 interface MangaDexChapterAttributes {
+  volume?: string | null
   chapter?: string | null
   title?: string | null
   translatedLanguage?: string | null
+  externalUrl?: string | null
+  isUnavailable?: boolean | null
+  pages?: number | null
+  publishAt?: string | null
 }
 
 interface MangaDexChapterData {
   id: string
+  relationships?: MangaDexRelationship[]
   attributes?: MangaDexChapterAttributes
 }
 
@@ -78,6 +84,43 @@ const resolveRequestedLanguages = (value: unknown): string[] => {
   return DEFAULT_LANGUAGES
 }
 
+const normalizeLanguageCode = (value: string): string => value.trim().toLowerCase()
+
+const normalizeChapterNumberKey = (value: string): string => {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  const numeric = Number(trimmed)
+  if (Number.isFinite(numeric)) return String(numeric)
+  return trimmed.toLowerCase()
+}
+
+const extractScanlationGroups = (relationships: MangaDexRelationship[] | undefined): string[] => {
+  if (!Array.isArray(relationships)) return []
+
+  return relationships
+    .filter((relationship) => relationship.type === 'scanlation_group')
+    .map((relationship) => {
+      const name = relationship.attributes?.name
+      return typeof name === 'string' ? name.trim() : ''
+    })
+    .filter(Boolean)
+}
+
+const languageRank = (language: string, preferredLanguages: string[]): number => {
+  const normalized = normalizeLanguageCode(language)
+  const index = preferredLanguages.findIndex((entry) => {
+    const preferred = normalizeLanguageCode(entry)
+    return preferred === normalized || preferred === normalized.split('-')[0]
+  })
+  return index >= 0 ? index : Number.MAX_SAFE_INTEGER
+}
+
+const parseTimestamp = (value: string | null | undefined): number => {
+  if (!value) return 0
+  const parsed = Date.parse(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
 const extractCoverFileName = (relationships: MangaDexRelationship[] | undefined): string => {
   if (!Array.isArray(relationships)) return ''
   const cover = relationships.find((relationship) => relationship.type === 'cover_art')
@@ -108,6 +151,12 @@ export interface PluginChapterSummary {
   number: string
   language: string
   languageCodes: string[]
+  siteLink?: string
+  scanlationGroups?: string[]
+  releaseCount?: number
+  external?: boolean
+  readable?: boolean
+  pageCount?: number
   offline: boolean
   pages: Array<Record<string, unknown>>
 }
@@ -236,6 +285,7 @@ export async function getMangaDexChapters(
   const limit = 100
   let offset = 0
   let total = 0
+  const preferredLanguages = resolveRequestedLanguages(languageCodes)
   const chapters: MangaDexChapterData[] = []
 
   do {
@@ -244,7 +294,8 @@ export async function getMangaDexChapters(
     params.set('offset', String(offset))
     params.append('order[chapter]', 'asc')
     params.append('order[volume]', 'asc')
-    for (const language of resolveRequestedLanguages(languageCodes)) {
+    params.append('includes[]', 'scanlation_group')
+    for (const language of preferredLanguages) {
       params.append('translatedLanguage[]', language)
     }
 
@@ -264,22 +315,80 @@ export async function getMangaDexChapters(
     offset += limit
   } while (offset < total && offset < 1000)
 
-  return chapters.map((chapter, index) => {
+  const consolidated = new Map<
+    string,
+    PluginChapterSummary & {
+      _publishAt: number
+    }
+  >()
+
+  for (let index = 0; index < chapters.length; index += 1) {
+    const chapter = chapters[index]
     const number = chapter.attributes?.chapter?.trim() || String(index + 1)
     const chapterTitle = chapter.attributes?.title?.trim()
     const name = chapterTitle ? `Cap. ${number} - ${chapterTitle}` : `Cap. ${number}`
     const language = chapter.attributes?.translatedLanguage?.trim() || 'unknown'
+    const externalUrl = chapter.attributes?.externalUrl?.trim() || ''
+    const pageCount = typeof chapter.attributes?.pages === 'number' ? chapter.attributes.pages : 0
+    const readable = pageCount > 0 && !externalUrl
+    const scanlationGroups = extractScanlationGroups(chapter.relationships)
+    const publishAt = parseTimestamp(chapter.attributes?.publishAt)
+    const key = normalizeChapterNumberKey(number) || chapter.id
 
-    return {
+    const candidate: PluginChapterSummary & { _publishAt: number } = {
       siteId: chapter.id,
       name,
       number,
       language,
       languageCodes: [language],
+      siteLink: externalUrl || undefined,
+      scanlationGroups,
+      releaseCount: 1,
+      external: Boolean(externalUrl),
+      readable,
+      pageCount,
       offline: false,
-      pages: []
+      pages: [],
+      _publishAt: publishAt
     }
-  })
+
+    const current = consolidated.get(key)
+    if (!current) {
+      consolidated.set(key, candidate)
+      continue
+    }
+
+    const mergedLanguages = Array.from(new Set([...current.languageCodes, language]))
+    const mergedGroups = Array.from(new Set([...(current.scanlationGroups ?? []), ...scanlationGroups]))
+    const nextReleaseCount = (current.releaseCount ?? 1) + 1
+
+    const currentReadable = current.readable ? 1 : 0
+    const candidateReadable = candidate.readable ? 1 : 0
+    const currentLanguageRank = languageRank(current.language, preferredLanguages)
+    const candidateLanguageRank = languageRank(candidate.language, preferredLanguages)
+
+    const shouldReplace =
+      candidateReadable > currentReadable ||
+      (candidateReadable === currentReadable &&
+        (candidate.pageCount! > (current.pageCount ?? 0) ||
+          (candidate.pageCount === current.pageCount &&
+            (candidateLanguageRank < currentLanguageRank ||
+              (candidateLanguageRank === currentLanguageRank && candidate._publishAt > current._publishAt)))))
+
+    if (!shouldReplace) {
+      current.languageCodes = mergedLanguages
+      current.scanlationGroups = mergedGroups
+      current.releaseCount = nextReleaseCount
+      continue
+    }
+
+    candidate.languageCodes = mergedLanguages
+    candidate.scanlationGroups = mergedGroups
+    candidate.releaseCount = nextReleaseCount
+    consolidated.set(key, candidate)
+  }
+
+  return Array.from(consolidated.values()).map(({ _publishAt, ...chapter }) => chapter)
 }
 
 export async function getMangaDexChapterPages(chapterSiteId: string): Promise<PluginPage[]> {
