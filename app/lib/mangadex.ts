@@ -282,7 +282,7 @@ export async function getMangaDexChapters(
   siteId: string,
   languageCodes?: string[]
 ): Promise<PluginChapterSummary[]> {
-  const limit = 100
+  const limit = 500
   let offset = 0
   let total = 0
   const preferredLanguages = resolveRequestedLanguages(languageCodes)
@@ -295,9 +295,6 @@ export async function getMangaDexChapters(
     params.append('order[chapter]', 'asc')
     params.append('order[volume]', 'asc')
     params.append('includes[]', 'scanlation_group')
-    for (const language of preferredLanguages) {
-      params.append('translatedLanguage[]', language)
-    }
 
     const response = await fetch(`${MANGADEX_API_URL}/manga/${siteId}/feed?${params.toString()}`, {
       method: 'GET',
@@ -313,7 +310,7 @@ export async function getMangaDexChapters(
     total = typeof payload.total === 'number' ? payload.total : 0
     chapters.push(...pageData)
     offset += limit
-  } while (offset < total && offset < 1000)
+  } while (offset < total)
 
   const consolidated = new Map<
     string,
