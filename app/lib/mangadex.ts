@@ -94,6 +94,17 @@ const normalizeChapterNumberKey = (value: string): string => {
   return trimmed.toLowerCase()
 }
 
+const chapterSortValue = (value: string): number | null => {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const numeric = Number(trimmed)
+  if (Number.isFinite(numeric)) return numeric
+  const match = trimmed.match(/-?\d+(?:\.\d+)?/)
+  if (!match) return null
+  const parsed = Number(match[0])
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 const extractScanlationGroups = (relationships: MangaDexRelationship[] | undefined): string[] => {
   if (!Array.isArray(relationships)) return []
 
@@ -312,80 +323,56 @@ export async function getMangaDexChapters(
     offset += limit
   } while (offset < total)
 
-  const consolidated = new Map<
-    string,
-    PluginChapterSummary & {
-      _publishAt: number
-    }
-  >()
+  return chapters
+    .map((chapter, index) => {
+      const number = chapter.attributes?.chapter?.trim() || String(index + 1)
+      const chapterTitle = chapter.attributes?.title?.trim()
+      const name = chapterTitle ? `Cap. ${number} - ${chapterTitle}` : `Cap. ${number}`
+      const language = chapter.attributes?.translatedLanguage?.trim() || 'unknown'
+      const externalUrl = chapter.attributes?.externalUrl?.trim() || ''
+      const pageCount = typeof chapter.attributes?.pages === 'number' ? chapter.attributes.pages : 0
+      const readable = pageCount > 0 && !externalUrl
+      const scanlationGroups = extractScanlationGroups(chapter.relationships)
+      const publishAt = parseTimestamp(chapter.attributes?.publishAt)
 
-  for (let index = 0; index < chapters.length; index += 1) {
-    const chapter = chapters[index]
-    const number = chapter.attributes?.chapter?.trim() || String(index + 1)
-    const chapterTitle = chapter.attributes?.title?.trim()
-    const name = chapterTitle ? `Cap. ${number} - ${chapterTitle}` : `Cap. ${number}`
-    const language = chapter.attributes?.translatedLanguage?.trim() || 'unknown'
-    const externalUrl = chapter.attributes?.externalUrl?.trim() || ''
-    const pageCount = typeof chapter.attributes?.pages === 'number' ? chapter.attributes.pages : 0
-    const readable = pageCount > 0 && !externalUrl
-    const scanlationGroups = extractScanlationGroups(chapter.relationships)
-    const publishAt = parseTimestamp(chapter.attributes?.publishAt)
-    const key = normalizeChapterNumberKey(number) || chapter.id
+      return {
+        siteId: chapter.id,
+        name,
+        number,
+        language,
+        languageCodes: [language],
+        siteLink: externalUrl || undefined,
+        scanlationGroups,
+        releaseCount: 1,
+        external: Boolean(externalUrl),
+        readable,
+        pageCount,
+        offline: false,
+        pages: [],
+        _publishAt: publishAt
+      } satisfies PluginChapterSummary & { _publishAt: number }
+    })
+    .sort((left, right) => {
+      const leftNumber = chapterSortValue(left.number)
+      const rightNumber = chapterSortValue(right.number)
+      if (leftNumber !== null && rightNumber !== null && leftNumber !== rightNumber) {
+        return leftNumber - rightNumber
+      }
+      if (leftNumber !== null && rightNumber === null) return -1
+      if (leftNumber === null && rightNumber !== null) return 1
 
-    const candidate: PluginChapterSummary & { _publishAt: number } = {
-      siteId: chapter.id,
-      name,
-      number,
-      language,
-      languageCodes: [language],
-      siteLink: externalUrl || undefined,
-      scanlationGroups,
-      releaseCount: 1,
-      external: Boolean(externalUrl),
-      readable,
-      pageCount,
-      offline: false,
-      pages: [],
-      _publishAt: publishAt
-    }
+      const leftReadable = left.readable ? 1 : 0
+      const rightReadable = right.readable ? 1 : 0
+      if (leftReadable !== rightReadable) return rightReadable - leftReadable
 
-    const current = consolidated.get(key)
-    if (!current) {
-      consolidated.set(key, candidate)
-      continue
-    }
+      const leftRank = languageRank(left.language, preferredLanguages)
+      const rightRank = languageRank(right.language, preferredLanguages)
+      if (leftRank !== rightRank) return leftRank - rightRank
 
-    const mergedLanguages = Array.from(new Set([...current.languageCodes, language]))
-    const mergedGroups = Array.from(new Set([...(current.scanlationGroups ?? []), ...scanlationGroups]))
-    const nextReleaseCount = (current.releaseCount ?? 1) + 1
-
-    const currentReadable = current.readable ? 1 : 0
-    const candidateReadable = candidate.readable ? 1 : 0
-    const currentLanguageRank = languageRank(current.language, preferredLanguages)
-    const candidateLanguageRank = languageRank(candidate.language, preferredLanguages)
-
-    const shouldReplace =
-      candidateReadable > currentReadable ||
-      (candidateReadable === currentReadable &&
-        (candidate.pageCount! > (current.pageCount ?? 0) ||
-          (candidate.pageCount === current.pageCount &&
-            (candidateLanguageRank < currentLanguageRank ||
-              (candidateLanguageRank === currentLanguageRank && candidate._publishAt > current._publishAt)))))
-
-    if (!shouldReplace) {
-      current.languageCodes = mergedLanguages
-      current.scanlationGroups = mergedGroups
-      current.releaseCount = nextReleaseCount
-      continue
-    }
-
-    candidate.languageCodes = mergedLanguages
-    candidate.scanlationGroups = mergedGroups
-    candidate.releaseCount = nextReleaseCount
-    consolidated.set(key, candidate)
-  }
-
-  return Array.from(consolidated.values()).map(({ _publishAt, ...chapter }) => chapter)
+      if (left._publishAt !== right._publishAt) return right._publishAt - left._publishAt
+      return left.siteId.localeCompare(right.siteId)
+    })
+    .map(({ _publishAt, ...chapter }) => chapter)
 }
 
 export async function getMangaDexChapterPages(chapterSiteId: string): Promise<PluginPage[]> {
