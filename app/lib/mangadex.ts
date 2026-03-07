@@ -306,6 +306,9 @@ export async function getMangaDexChapters(
     params.append('order[chapter]', 'asc')
     params.append('order[volume]', 'asc')
     params.append('includes[]', 'scanlation_group')
+    for (const language of preferredLanguages) {
+      params.append('translatedLanguage[]', language)
+    }
 
     const response = await fetch(`${MANGADEX_API_URL}/manga/${siteId}/feed?${params.toString()}`, {
       method: 'GET',
@@ -323,7 +326,7 @@ export async function getMangaDexChapters(
     offset += limit
   } while (offset < total)
 
-  return chapters
+  const rankedChapters = chapters
     .map((chapter, index) => {
       const number = chapter.attributes?.chapter?.trim() || String(index + 1)
       const chapterTitle = chapter.attributes?.title?.trim()
@@ -331,7 +334,7 @@ export async function getMangaDexChapters(
       const language = chapter.attributes?.translatedLanguage?.trim() || 'unknown'
       const externalUrl = chapter.attributes?.externalUrl?.trim() || ''
       const pageCount = typeof chapter.attributes?.pages === 'number' ? chapter.attributes.pages : 0
-      const readable = pageCount > 0 && !externalUrl
+      const readable = pageCount > 0 && !externalUrl && chapter.attributes?.isUnavailable !== true
       const scanlationGroups = extractScanlationGroups(chapter.relationships)
       const publishAt = parseTimestamp(chapter.attributes?.publishAt)
 
@@ -341,7 +344,7 @@ export async function getMangaDexChapters(
         number,
         language,
         languageCodes: [language],
-        siteLink: externalUrl || undefined,
+        siteLink: readable ? undefined : externalUrl || undefined,
         scanlationGroups,
         releaseCount: 1,
         external: Boolean(externalUrl),
@@ -372,6 +375,17 @@ export async function getMangaDexChapters(
       if (left._publishAt !== right._publishAt) return right._publishAt - left._publishAt
       return left.siteId.localeCompare(right.siteId)
     })
+
+  const bestByNumberAndLanguage = new Map<string, (PluginChapterSummary & { _publishAt: number })>()
+  for (const chapter of rankedChapters) {
+    const key = `${normalizeChapterNumberKey(chapter.number)}:${normalizeLanguageCode(chapter.language)}`
+    if (!bestByNumberAndLanguage.has(key)) {
+      bestByNumberAndLanguage.set(key, chapter)
+    }
+  }
+
+  return [...bestByNumberAndLanguage.values()]
+    .filter((chapter) => chapter.readable)
     .map(({ _publishAt, ...chapter }) => chapter)
 }
 
