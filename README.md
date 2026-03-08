@@ -7,6 +7,10 @@ Plugin HTTP API for Comic Universe backed by MangaDex.
 - `metadata`
 - `content`
 
+## Features
+
+- `onDemandPageList`
+
 ## Endpoints
 
 - `POST /api/getList` - default list
